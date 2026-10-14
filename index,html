@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sesión 1: Armando ando - mBot2 / CyberPi</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --primary-dark: #2B6CB0;
+            --secondary: #FF9F1C;
+            --accent: #2EC4B6;
+            --bg: #F0F4F8;
+            --card-bg: #FFFFFF;
+            --text: #2D3748;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary-dark);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            color: #2B6CB0;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 25px;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .screen {
+            display: none;
+            animation: fadeIn 0.4s ease-in-out;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .select-box {
+            margin: 25px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: var(--text);
+        }
+
+        select {
+            width: 100%;
+            padding: 16px;
+            border-radius: 14px;
+            border: 2px solid #CBD5E0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            outline: none;
+            transition: all 0.2s;
+            background-color: #F7FAFC;
+            color: var(--text);
+        }
+
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 16px 28px;
+            border-radius: 16px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3);
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: #38A169;
+            box-shadow: 0 4px 12px rgba(56, 161, 105, 0.3);
+        }
+
+        .btn-success:hover {
+            background: #276749;
+        }
+
+        .btn-secondary {
+            background: #718096;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #EDF2F7;
+            padding: 15px 20px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            font-weight: 800;
+            font-size: 1.1rem;
+        }
+
+        .badge {
+            background: var(--secondary);
+            color: white;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 1rem;
+        }
+
+        .features-summary {
+            background: #EBF8FF;
+            border-left: 5px solid var(--primary);
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .features-summary ul {
+            margin-left: 20px;
+            margin-top: 8px;
+        }
+
+        .drag-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+            min-height: 90px;
+            background: #F7FAFC;
+            border: 2px dashed #CBD5E0;
+            border-radius: 16px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .draggable-item {
+            background: white;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: grab;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            user-select: none;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .draggable-item:hover {
+            border-color: var(--primary);
+            transform: scale(1.03);
+        }
+
+        .drop-zones {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .drop-zone {
+            background: #FFFFFF;
+            border: 3px solid #E2E8F0;
+            border-radius: 18px;
+            padding: 15px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.2s;
+        }
+
+        .drop-zone.zone-mecanico { border-color: #FF6B6B; }
+        .drop-zone.zone-electronico { border-color: #4ECDC4; }
+        .drop-zone.zone-control { border-color: #FFE66D; }
+
+        .drop-zone.drag-over {
+            background: #F0FFF4;
+            transform: scale(1.02);
+        }
+
+        .drop-zone h3 {
+            font-size: 1.2rem;
+            margin-bottom: 12px;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #EDF2F7;
+            width: 100%;
+        }
+
+        .drop-zone .items-holder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .leaderboard-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .leaderboard-table th, .leaderboard-table td {
+            padding: 14px 18px;
+            text-align: left;
+        }
+
+        .leaderboard-table th {
+            background-color: var(--primary);
+            color: white;
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .leaderboard-table tr:nth-child(even) { background-color: #F7FAFC; }
+        .leaderboard-table tr:nth-child(odd) { background-color: #FFFFFF; }
+        .leaderboard-table tr.top-1 { background-color: #FEFCBF; font-weight: bold; }
+        .leaderboard-table tr.top-2 { background-color: #E2E8F0; font-weight: bold; }
+        .leaderboard-table tr.top-3 { background-color: #FEEBC8; font-weight: bold; }
+
+        .result-card {
+            text-align: center;
+            padding: 25px;
+            background: #F7FAFC;
+            border-radius: 20px;
+            margin-bottom: 25px;
+        }
+
+        .score-display {
+            font-size: 3rem;
+            font-family: 'Fredoka One', cursive;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+
+        .status-sync {
+            font-size: 0.95rem;
+            color: #2B6CB0;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: 700;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- PANTALLA 1: INICIO Y SELECCIÓN DE ALUMNO -->
+        <div id="screen-welcome" class="screen active">
+            <h1>🤖 Sesión 1: Armando ando</h1>
+            <p class="subtitle">mBot2 / CyberPi - Robótica Educativa</p>
+
+            <div class="features-summary">
+                <strong>💡 Conociendo nuestro robot mBot2:</strong>
+                <ul>
+                    <li><strong>Chasis de aluminio:</strong> ligero y súper resistente.</li>
+                    <li><strong>CyberPi:</strong> microprocesador poderoso e inteligente.</li>
+                    <li><strong>Sensores y Motores:</strong> Múltiples sensores incluidos, motores con encoder y mBuild.</li>
+                </ul>
+            </div>
+
+            <div class="select-box">
+                <label for="student-select">👤 Selecciona tu nombre para comenzar la actividad:</label>
+                <select id="student-select">
+                    <option value="">-- Elige tu nombre de la lista --</option>
+                </select>
+            </div>
+
+            <button class="btn" onclick="startActivity()">🚀 Comenzar Actividad</button>
+
+            <div style="margin-top: 35px;">
+                <h3>🏆 Top 10 - Clasificación del Grupo (Google Sheets)</h3>
+                <table class="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>Posición</th>
+                            <th>Alumno</th>
+                            <th>Puntos</th>
+                            <th>Tiempo</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-welcome-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- PANTALLA 2: JUEGO INTERACTIVO -->
+        <div id="screen-game" class="screen">
+            <div class="game-header">
+                <div>👤 Alumno: <span id="current-student-name" class="badge">---</span></div>
+                <div>⏱️ Tiempo: <span id="timer" class="badge">00:00</span></div>
+            </div>
+
+            <h2>🧩 Clasifica las Partes del mBot2</h2>
+            <p style="text-align: center; margin-bottom: 20px; color: #4A5568;">
+                Arrastra cada pieza o componente hacia el <strong>Sistema del Robot</strong> al que pertenece:
+            </p>
+
+            <div class="drag-container" id="drag-container"></div>
+
+            <div class="drop-zones">
+                <div class="drop-zone zone-mecanico" data-system="Mecánico">
+                    <h3>⚙️ Sistema Mecánico</h3>
+                    <div class="items-holder"></div>
+                </div>
+
+                <div class="drop-zone zone-electronico" data-system="Electrónico">
+                    <h3>⚡ Sistema Electrónico</h3>
+                    <div class="items-holder"></div>
+                </div>
+
+                <div class="drop-zone zone-control" data-system="Control">
+                    <h3>🧠 Sistema de Control</h3>
+                    <div class="items-holder"></div>
+                </div>
+            </div>
+
+            <button class="btn btn-success" onclick="finishGame()">✅ Finalizar y Guardar Puntuación</button>
+        </div>
+
+        <!-- PANTALLA 3: RESULTADOS -->
+        <div id="screen-results" class="screen">
+            <h2>🎉 ¡Excelente Trabajo!</h2>
+            
+            <div class="result-card">
+                <p>Resumen de tu actividad:</p>
+                <div class="score-display" id="final-score">100 pts</div>
+                <p>⏱️ Tiempo total: <strong id="final-time">00:00</strong></p>
+                <p id="status-sync" class="status-sync">💾 Guardando resultados en Google Sheets...</p>
+                <p id="feedback-message" style="margin-top: 10px; font-weight: 700; color: #2B6CB0;"></p>
+            </div>
+
+            <h3>🏆 Top 10 de Puntuaciones en Vivo</h3>
+            <table class="leaderboard-table" style="margin-bottom: 25px;">
+                <thead>
+                    <tr>
+                        <th>Posición</th>
+                        <th>Alumno</th>
+                        <th>Puntos</th>
+                        <th>Tiempo</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard-results-body"></tbody>
+            </table>
+
+            <div style="display: flex; gap: 15px;">
+                <button class="btn btn-secondary" onclick="restartToWelcome()">🔄 Volver al Inicio</button>
+                <button class="btn" onclick="startActivitySameUser()">🔁 Repetir Actividad</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzbKpPdYuPL9jHqEpYbsP6Z5NsD_bqr0O4OujXGt6LzrouuHoJt_dh8kspf-wN6WptxxQ/exec";
+
+        const students = [
+            "RAFAEL ALVAREZ CALIX",
+            "LEONARDO APARICIO DE LA CRUZ",
+            "Maria Jose Castellanos Ramirez",
+            "Odette Collado Jiménez",
+            "JOSE ALONSO GAMAS CRUZ",
+            "Enrique Gómez Gonzalez",
+            "Santiago Huertas Estevez",
+            "Victoria Guadalupe Martinez García",
+            "ABNER GAEL PALACIOS LOPEZ",
+            "Emanuel Arturo Pancardo Lazaro",
+            "JOSE LUIS RUEDA PALANCARES",
+            "Damian Elias Torres Ramírez",
+            "Rafael Trujillo Hernandez",
+            "Carlos David Valdez Velazquez",
+            "Cristian Wall Velazquez",
+            "Rafael Wall Velazquez"
+        ];
+
+        const componentsData = [
+            { id: '1', name: 'Chasis de aluminio', system: 'Mecánico', icon: '🔩' },
+            { id: '2', name: 'Llantas', system: 'Mecánico', icon: '🛞' },
+            { id: '3', name: 'Tornillos y tuercas', system: 'Mecánico', icon: '🔧' },
+            { id: '4', name: 'Minirueda', system: 'Mecánico', icon: '⚙️' },
+            { id: '5', name: 'Sensor Ultrasónico', system: 'Electrónico', icon: '📡' },
+            { id: '6', name: 'Sensor RGB / Cuádruple', system: 'Electrónico', icon: '👁️' },
+            { id: '7', name: 'Motores con Encoder', system: 'Electrónico', icon: '⚡' },
+            { id: '8', name: 'CyberPi', system: 'Control', icon: '🧠' }
+        ];
+
+        let currentStudent = "";
+        let timerInterval = null;
+        let secondsElapsed = 0;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            populateStudentSelect();
+            fetchAndRenderLeaderboard();
+        });
+
+        function populateStudentSelect() {
+            const select = document.getElementById('student-select');
+            students.sort().forEach(student => {
+                const opt = document.createElement('option');
+                opt.value = student;
+                opt.textContent = student;
+                select.appendChild(opt);
+            });
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+        }
+
+        function startActivity() {
+            const select = document.getElementById('student-select');
+            const selectedValue = select.value;
+
+            if (!selectedValue) {
+                alert("Por favor, selecciona tu nombre antes de comenzar.");
+                return;
+            }
+
+            currentStudent = selectedValue;
+            setupGame();
+            showScreen('screen-game');
+        }
+
+        function startActivitySameUser() {
+            setupGame();
+            showScreen('screen-game');
+        }
+
+        function restartToWelcome() {
+            clearInterval(timerInterval);
+            document.getElementById('student-select').value = "";
+            fetchAndRenderLeaderboard();
+            showScreen('screen-welcome');
+        }
+
+        function setupGame() {
+            document.getElementById('current-student-name').textContent = currentStudent;
+            secondsElapsed = 0;
+            document.getElementById('timer').textContent = "00:00";
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                const mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                const secs = String(secondsElapsed % 60).padStart(2, '0');
+                document.getElementById('timer').textContent = `${mins}:${secs}`;
+            }, 1000);
+
+            const dragContainer = document.getElementById('drag-container');
+            dragContainer.innerHTML = '';
+            document.querySelectorAll('.drop-zone .items-holder').forEach(holder => holder.innerHTML = '');
+
+            const shuffledItems = [...componentsData].sort(() => Math.random() - 0.5);
+
+            shuffledItems.forEach(comp => {
+                const item = document.createElement('div');
+                item.className = 'draggable-item';
+                item.draggable = true;
+                item.dataset.id = comp.id;
+                item.dataset.system = comp.system;
+                item.innerHTML = `<span>${comp.icon}</span> <span>${comp.name}</span>`;
+
+                item.addEventListener('dragstart', handleDragStart);
+                item.addEventListener('dragend', handleDragEnd);
+                item.addEventListener('click', () => handleMobileClick(item));
+
+                dragContainer.appendChild(item);
+            });
+
+            setupDropZones();
+        }
+
+        let selectedMobileItem = null;
+
+        function handleMobileClick(item) {
+            if (selectedMobileItem) {
+                selectedMobileItem.style.borderColor = '#E2E8F0';
+            }
+            selectedMobileItem = item;
+            item.style.borderColor = '#4A90E2';
+        }
+
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+            e.target.classList.add('dragging');
+        }
+
+        function handleDragEnd(e) {
+            e.target.classList.remove('dragging');
+        }
+
+        function setupDropZones() {
+            const zones = document.querySelectorAll('.drop-zone');
+            zones.forEach(zone => {
+                zone.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    zone.classList.add('drag-over');
+                });
+
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('drag-over');
+                });
+
+                zone.addEventListener('drop', e => {
+                    e.preventDefault();
+                    zone.classList.remove('drag-over');
+                    const id = e.dataTransfer.getData('text/plain');
+                    const draggableElement = document.querySelector(`[data-id="${id}"]`);
+                    if (draggableElement) {
+                        zone.querySelector('.items-holder').appendChild(draggableElement);
+                    }
+                });
+
+                zone.addEventListener('click', () => {
+                    if (selectedMobileItem) {
+                        zone.querySelector('.items-holder').appendChild(selectedMobileItem);
+                        selectedMobileItem.style.borderColor = '#E2E8F0';
+                        selectedMobileItem = null;
+                    }
+                });
+            });
+        }
+
+        function finishGame() {
+            clearInterval(timerInterval);
+
+            let correctCount = 0;
+            const totalItems = componentsData.length;
+
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                const targetSystem = zone.dataset.system;
+                const items = zone.querySelectorAll('.draggable-item');
+                items.forEach(item => {
+                    if (item.dataset.system === targetSystem) {
+                        correctCount++;
+                    }
+                });
+            });
+
+            const score = Math.round((correctCount / totalItems) * 100);
+            const timeFormatted = document.getElementById('timer').textContent;
+
+            document.getElementById('final-score').textContent = `${score} / 100 pts`;
+            document.getElementById('final-time').textContent = timeFormatted;
+
+            sendDataToGoogleSheet(currentStudent, "Clasificación de Sistemas", score, timeFormatted);
+
+            showScreen('screen-results');
+        }
+
+        function sendDataToGoogleSheet(studentName, activity, score, timeFormatted) {
+            const statusEl = document.getElementById('status-sync');
+            statusEl.textContent = "⏳ Guardando resultados en Google Sheets...";
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'addScore',
+                    alumno: studentName,
+                    actividad: activity,
+                    puntuacion: score,
+                    tiempo: timeFormatted
+                })
+            })
+            .then(() => {
+                statusEl.textContent = "✅ ¡Guardado con éxito en tu Google Sheet!";
+                setTimeout(fetchAndRenderLeaderboard, 1500);
+            })
+            .catch(err => {
+                statusEl.textContent = "⚠️ Error al conectar con Google Sheets.";
+                console.error(err);
+            });
+        }
+
+        function fetchAndRenderLeaderboard() {
+            fetch(`${SCRIPT_URL}?action=getTop10`)
+            .then(res => res.json())
+            .then(data => {
+                renderLeaderboardTable('leaderboard-welcome-body', data);
+                renderLeaderboardTable('leaderboard-results-body', data);
+            })
+            .catch(err => console.error("Error al obtener Top 10:", err));
+        }
+
+        function renderLeaderboardTable(elementId, rows) {
+            const tbody = document.getElementById(elementId);
+            tbody.innerHTML = '';
+
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: #A0AEC0;">Aún no hay puntuaciones registradas en la hoja.</td></tr>`;
+                return;
+            }
+
+            rows.forEach((entry, index) => {
+                const tr = document.createElement('tr');
+                if (index === 0) tr.className = 'top-1';
+                else if (index === 1) tr.className = 'top-2';
+                else if (index === 2) tr.className = 'top-3';
+
+                let rankBadge = `${index + 1}º`;
+                if (index === 0) rankBadge = `🥇 1º`;
+                if (index === 1) rankBadge = `🥈 2º`;
+                if (index === 2) rankBadge = `🥉 3º`;
+
+                tr.innerHTML = `
+                    <td>${rankBadge}</td>
+                    <td>${entry.alumno}</td>
+                    <td><strong>${entry.puntuacion} pts</strong></td>
+                    <td>${entry.tiempo}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
